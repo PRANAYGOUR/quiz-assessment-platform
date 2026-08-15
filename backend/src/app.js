@@ -16,8 +16,10 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ success: true, message: 'API is running successfully' });
 });
 
+const authRoutes = require('./routes/authRoutes');
+
 // Feature Routes will be imported here by the team
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 // app.use('/api/quizzes', quizRoutes);
 
 // Error Handling Middlewares
