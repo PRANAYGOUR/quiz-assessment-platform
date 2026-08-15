@@ -87,10 +87,60 @@ const getAvailableQuizzes = async (req, res, next) => {
   }
 };
 
+// @desc    Get leaderboard for a specific quiz
+// @route   GET /api/quizzes/:id/leaderboard
+// @access  Private
+const getQuizLeaderboard = async (req, res, next) => {
+  try {
+    const quizId = req.params.id;
+    const pool = require('../config/db');
+    
+    const [rows] = await pool.query(`
+      SELECT a.id, a.score, a.totalMarks, a.submittedAt, u.name 
+      FROM attempts a
+      JOIN users u ON a.userId = u.id
+      WHERE a.quizId = ? AND a.status = 'SUBMITTED'
+      ORDER BY a.score DESC, a.submittedAt ASC
+      LIMIT 50
+    `, [quizId]);
+
+    res.status(200).json({ success: true, leaderboard: rows });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get high-level analytics for an admin
+// @route   GET /api/quizzes/admin/analytics
+// @access  Private/Admin
+const getAdminAnalytics = async (req, res, next) => {
+  try {
+    const adminId = req.user.id;
+    const pool = require('../config/db');
+
+    // Get basic stats for quizzes created by this admin
+    const [stats] = await pool.query(`
+      SELECT 
+        COUNT(DISTINCT q.id) as totalQuizzes,
+        COUNT(a.id) as totalAttempts,
+        AVG(CASE WHEN a.status = 'SUBMITTED' THEN a.score END) as averageScore
+      FROM quizzes q
+      LEFT JOIN attempts a ON q.id = a.quizId
+      WHERE q.createdBy = ?
+    `, [adminId]);
+
+    res.status(200).json({ success: true, analytics: stats[0] });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createQuiz,
   getMyQuizzes,
   addQuestion,
   getQuizQuestions,
-  getAvailableQuizzes
+  getAvailableQuizzes,
+  getQuizLeaderboard,
+  getAdminAnalytics
 };
