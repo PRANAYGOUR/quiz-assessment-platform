@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { createQuiz, getMyQuizzes, addQuestion, getQuizQuestions } = require('../controllers/quizController');
+const { createQuiz, getMyQuizzes, addQuestion, getQuizQuestions, getAvailableQuizzes } = require('../controllers/quizController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
-// All quiz management routes require admin access
-router.use(protect, adminOnly);
+router.use(protect);
 
+// Student accessible routes
+router.get('/published', getAvailableQuizzes); // Using /published to match frontend
+
+// Admin only routes
+router.use(adminOnly);
 router.post('/', createQuiz);
 router.get('/my-quizzes', getMyQuizzes);
 router.post('/:id/questions', addQuestion);

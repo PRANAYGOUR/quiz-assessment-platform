@@ -74,9 +74,23 @@ const getQuizQuestions = async (req, res, next) => {
   }
 };
 
+// @desc    Get all available quizzes for students
+// @route   GET /api/quizzes
+// @access  Private/Student
+const getAvailableQuizzes = async (req, res, next) => {
+  try {
+    const pool = require('../config/db');
+    const [rows] = await pool.query('SELECT id, title, description, duration, negativeMarking, createdAt FROM quizzes ORDER BY createdAt DESC');
+    res.status(200).json({ success: true, quizzes: rows });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createQuiz,
   getMyQuizzes,
   addQuestion,
-  getQuizQuestions
+  getQuizQuestions,
+  getAvailableQuizzes
 };
