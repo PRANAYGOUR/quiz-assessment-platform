@@ -106,9 +106,14 @@ export default function AdminDashboard() {
                       {new Date(quiz.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link to={`/admin/manage-questions/${quiz.id}`} className="text-[var(--color-primary-green)] hover:text-[var(--color-primary-green-dark)] flex items-center justify-end gap-1">
-                        <Settings className="w-4 h-4" /> Manage Questions
-                      </Link>
+                      <div className="flex items-center justify-end gap-4">
+                        <Link to={`/admin/analytics/${quiz.id}`} className="text-blue-500 hover:text-blue-700 flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg> Analytics
+                        </Link>
+                        <Link to={`/admin/manage-questions/${quiz.id}`} className="text-[var(--color-primary-green)] hover:text-[var(--color-primary-green-dark)] flex items-center gap-1">
+                          <Settings className="w-4 h-4" /> Questions
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

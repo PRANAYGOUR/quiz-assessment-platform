@@ -161,9 +161,17 @@ export default function QuizTaking() {
         <div className="flex-grow bg-white rounded border border-[var(--color-hr-border)] shadow-sm">
           <div className="p-6 border-b border-[var(--color-hr-border)] flex justify-between items-start">
             <div>
-              <h2 className="text-sm font-bold text-[#738f93] mb-2 uppercase tracking-wide">
-                Question {currentIdx + 1} of {questions.length}
-              </h2>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-sm font-bold text-[#738f93] uppercase tracking-wide">
+                  Question {currentIdx + 1} of {questions.length}
+                </h2>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${currentQ.difficulty === 'Hard' ? 'bg-red-100 text-red-800 border-red-200' : currentQ.difficulty === 'Easy' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'}`}>
+                  {currentQ.difficulty || 'Medium'}
+                </span>
+                <span className="bg-[#e9f2f9] text-[#2c6192] text-[10px] font-bold px-2 py-0.5 rounded border border-[#b8d4ee]">
+                  {currentQ.category || 'General'}
+                </span>
+              </div>
               <p className="text-lg font-semibold text-[#39424e] flex items-center gap-2">
                 {isLocked && <Lock className="w-5 h-5 text-red-500" />}
                 {currentQ.questionText}

@@ -17,7 +17,9 @@ export default function ManageQuestions() {
     optionD: '',
     correctAnswer: 'A',
     marks: 1,
-    timeLimit: 0
+    timeLimit: 0,
+    category: 'General',
+    difficulty: 'Medium'
   });
 
   useEffect(() => {
@@ -57,7 +59,9 @@ export default function ManageQuestions() {
         optionD: '',
         correctAnswer: 'A',
         marks: 1,
-        timeLimit: 0
+        timeLimit: 0,
+        category: 'General',
+        difficulty: 'Medium'
       });
       setEditingId(null);
       fetchQuestions(); // refresh list
@@ -76,7 +80,9 @@ export default function ManageQuestions() {
       optionD: q.optionD,
       correctAnswer: q.correctAnswer,
       marks: q.marks,
-      timeLimit: q.timeLimit || 0
+      timeLimit: q.timeLimit || 0,
+      category: q.category || 'General',
+      difficulty: q.difficulty || 'Medium'
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -123,6 +129,20 @@ export default function ManageQuestions() {
                     <input required type="text" name={`option${opt}`} className="input-field text-sm" value={newQuestion[`option${opt}`]} onChange={handleInputChange} />
                   </div>
                 ))}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#39424e] mb-1">Category</label>
+                    <input type="text" name="category" className="input-field text-sm" value={newQuestion.category} onChange={handleInputChange} placeholder="e.g. React, Algorithms" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#39424e] mb-1">Difficulty</label>
+                    <select name="difficulty" className="input-field text-sm bg-white" value={newQuestion.difficulty} onChange={handleInputChange}>
+                      <option value="Easy">Easy</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Hard">Hard</option>
+                    </select>
+                  </div>
+                </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-xs font-bold text-[#39424e] mb-1">Correct</label>
@@ -167,6 +187,12 @@ export default function ManageQuestions() {
                             <Clock className="w-3 h-3" /> {q.timeLimit}s
                           </span>
                         )}
+                        <span className={`text-xs font-bold px-2 py-1 rounded border ${q.difficulty === 'Hard' ? 'bg-red-100 text-red-800 border-red-200' : q.difficulty === 'Easy' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'}`}>
+                          {q.difficulty}
+                        </span>
+                        <span className="bg-[#e9f2f9] text-[#2c6192] text-xs font-bold px-2 py-1 rounded border border-[#b8d4ee]">
+                          {q.category}
+                        </span>
                         <span className="bg-[#f3f7f7] text-[#39424e] text-xs font-bold px-2 py-1 rounded border border-[var(--color-hr-border)]">
                           {q.marks} Marks
                         </span>

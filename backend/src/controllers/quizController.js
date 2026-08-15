@@ -40,7 +40,7 @@ const getMyQuizzes = async (req, res, next) => {
 const addQuestion = async (req, res, next) => {
   try {
     const quizId = req.params.id;
-    const { questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit } = req.body;
+    const { questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit, category, difficulty } = req.body;
 
     // Verify quiz belongs to this admin
     const quiz = await Quiz.findById(quizId);
@@ -53,7 +53,7 @@ const addQuestion = async (req, res, next) => {
       throw new Error('You can only add questions to your own quizzes');
     }
 
-    const questionId = await Question.create(quizId, questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit);
+    const questionId = await Question.create(quizId, questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit, category, difficulty);
     
     res.status(201).json({ success: true, message: 'Question added successfully', questionId });
   } catch (error) {
@@ -141,10 +141,10 @@ const getAdminAnalytics = async (req, res, next) => {
 const updateQuestion = async (req, res, next) => {
   try {
     const { qId } = req.params;
-    const { questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit } = req.body;
+    const { questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit, category, difficulty } = req.body;
     
     // Minimal validation - assume admin has rights for now based on route auth
-    const success = await Question.update(qId, questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit);
+    const success = await Question.update(qId, questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit, category, difficulty);
     
     if (success) {
       res.status(200).json({ success: true, message: 'Question updated successfully' });
@@ -176,6 +176,31 @@ const deleteQuestion = async (req, res, next) => {
   }
 };
 
+// @desc    Get detailed question analytics for a quiz
+// @route   GET /api/quizzes/:id/question-analytics
+// @access  Private/Admin
+const getQuestionAnalytics = async (req, res, next) => {
+  try {
+    const quizId = req.params.id;
+    const pool = require('../config/db');
+    
+    const [stats] = await pool.query(`
+      SELECT 
+        q.id as questionId, q.questionText, q.difficulty, q.category,
+        COUNT(a.id) as totalAttempts,
+        SUM(CASE WHEN a.isCorrect = 1 THEN 1 ELSE 0 END) as correctAnswers
+      FROM questions q
+      LEFT JOIN answers a ON q.id = a.questionId
+      WHERE q.quizId = ?
+      GROUP BY q.id
+    `, [quizId]);
+    
+    res.status(200).json({ success: true, analytics: stats });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createQuiz,
   getMyQuizzes,
@@ -185,5 +210,6 @@ module.exports = {
   getQuizLeaderboard,
   getAdminAnalytics,
   updateQuestion,
-  deleteQuestion
+  deleteQuestion,
+  getQuestionAnalytics
 };

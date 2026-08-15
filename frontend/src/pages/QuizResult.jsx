@@ -60,6 +60,15 @@ export default function QuizResult() {
           </div>
         </div>
 
+        {percentage >= 60 && (
+          <div className="flex justify-center mb-8">
+            <Link to={`/certificate/${id}`} className="bg-[var(--color-primary-green)] text-white font-bold py-3 px-8 rounded shadow hover:bg-[var(--color-primary-green-dark)] transition-colors flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+              View Certificate
+            </Link>
+          </div>
+        )}
+
         {/* Detailed Answers (Optional MVP feature) */}
         <div className="bg-white rounded border border-[var(--color-hr-border)] shadow-sm">
           <div className="bg-[#f9fbfb] p-4 border-b border-[var(--color-hr-border)]">

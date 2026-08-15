@@ -6,10 +6,12 @@ import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateQuiz from './pages/CreateQuiz';
 import ManageQuestions from './pages/ManageQuestions';
+import QuestionAnalytics from './pages/QuestionAnalytics';
 import StudentDashboard from './pages/StudentDashboard';
 import QuizTaking from './pages/QuizTaking';
 import QuizResult from './pages/QuizResult';
 import Leaderboard from './pages/Leaderboard';
+import Certificate from './pages/Certificate';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -62,10 +64,21 @@ function App() {
             </ProtectedRoute>
           } />
           
+          <Route path="/certificate/:id" element={
+            <ProtectedRoute allowedRoles={['student', 'admin']}>
+              <Certificate />
+            </ProtectedRoute>
+          } />
+          
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/analytics/:id" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <QuestionAnalytics />
             </ProtectedRoute>
           } />
           <Route path="/admin/create-quiz" element={
