@@ -6,6 +6,9 @@ import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateQuiz from './pages/CreateQuiz';
 import ManageQuestions from './pages/ManageQuestions';
+import StudentDashboard from './pages/StudentDashboard';
+import QuizTaking from './pages/QuizTaking';
+import QuizResult from './pages/QuizResult';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -24,12 +27,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-// Temp dashboard for student
-const TempStudentDashboard = () => {
-  const { logout } = useContext(AuthContext);
-  return <div className="p-8"><h1 className="text-2xl font-bold">Student View</h1><button onClick={logout} className="btn-primary mt-4 w-auto px-4">Logout</button></div>;
-};
-
 function App() {
   return (
     <AuthProvider>
@@ -42,7 +39,19 @@ function App() {
           {/* Student Routes */}
           <Route path="/dashboard" element={
             <ProtectedRoute allowedRoles={['student', 'admin']}>
-              <TempStudentDashboard />
+              <StudentDashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/quiz/:id" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <QuizTaking />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/result/:id" element={
+            <ProtectedRoute allowedRoles={['student', 'admin']}>
+              <QuizResult />
             </ProtectedRoute>
           } />
           
