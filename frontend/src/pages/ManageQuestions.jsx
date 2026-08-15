@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Save, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Save, HelpCircle, Edit2, Trash2, Clock } from 'lucide-react';
 
 export default function ManageQuestions() {
   const { id } = useParams();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
   
   const [newQuestion, setNewQuestion] = useState({
     questionText: '',
@@ -15,7 +16,8 @@ export default function ManageQuestions() {
     optionC: '',
     optionD: '',
     correctAnswer: 'A',
-    marks: 1
+    marks: 1,
+    timeLimit: 0
   });
 
   useEffect(() => {
@@ -38,24 +40,55 @@ export default function ManageQuestions() {
     setNewQuestion(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddQuestion = async (e) => {
+  const handleSaveQuestion = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post(`/quizzes/${id}/questions`, newQuestion);
-      if (res.data.success) {
-        setNewQuestion({
-          questionText: '',
-          optionA: '',
-          optionB: '',
-          optionC: '',
-          optionD: '',
-          correctAnswer: 'A',
-          marks: 1
-        });
-        fetchQuestions(); // refresh list
+      if (editingId) {
+        await api.put(`/quizzes/questions/${editingId}`, newQuestion);
+      } else {
+        await api.post(`/quizzes/${id}/questions`, newQuestion);
       }
+      
+      setNewQuestion({
+        questionText: '',
+        optionA: '',
+        optionB: '',
+        optionC: '',
+        optionD: '',
+        correctAnswer: 'A',
+        marks: 1,
+        timeLimit: 0
+      });
+      setEditingId(null);
+      fetchQuestions(); // refresh list
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to add question');
+      alert(error.response?.data?.message || 'Failed to save question');
+    }
+  };
+
+  const handleEdit = (q) => {
+    setEditingId(q.id);
+    setNewQuestion({
+      questionText: q.questionText,
+      optionA: q.optionA,
+      optionB: q.optionB,
+      optionC: q.optionC,
+      optionD: q.optionD,
+      correctAnswer: q.correctAnswer,
+      marks: q.marks,
+      timeLimit: q.timeLimit || 0
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = async (qId) => {
+    if (window.confirm("Are you sure you want to delete this question?")) {
+      try {
+        await api.delete(`/quizzes/questions/${qId}`);
+        fetchQuestions();
+      } catch (error) {
+        alert(error.response?.data?.message || 'Failed to delete question');
+      }
     }
   };
 
@@ -69,13 +102,17 @@ export default function ManageQuestions() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Question Form */}
           <div className="lg:col-span-1">
-            <div className="bg-white shadow-sm border border-[var(--color-hr-border)] rounded-md">
-              <div className="bg-[#f9fbfb] px-6 py-4 border-b border-[var(--color-hr-border)]">
+            <div className="bg-white shadow-sm border border-[var(--color-hr-border)] rounded-md sticky top-6">
+              <div className="bg-[#f9fbfb] px-6 py-4 border-b border-[var(--color-hr-border)] flex justify-between items-center">
                 <h3 className="font-bold text-[#39424e] flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-[var(--color-primary-green)]" /> Add Question
+                  <HelpCircle className="w-5 h-5 text-[var(--color-primary-green)]" /> 
+                  {editingId ? 'Edit Question' : 'Add Question'}
                 </h3>
+                {editingId && (
+                  <button onClick={() => { setEditingId(null); setNewQuestion({questionText:'',optionA:'',optionB:'',optionC:'',optionD:'',correctAnswer:'A',marks:1,timeLimit:0})}} className="text-xs text-red-500 hover:underline">Cancel Edit</button>
+                )}
               </div>
-              <form onSubmit={handleAddQuestion} className="p-6 space-y-4">
+              <form onSubmit={handleSaveQuestion} className="p-6 space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-[#39424e] mb-1">Question Text</label>
                   <textarea required name="questionText" rows={3} className="input-field text-sm" value={newQuestion.questionText} onChange={handleInputChange} />
@@ -86,20 +123,24 @@ export default function ManageQuestions() {
                     <input required type="text" name={`option${opt}`} className="input-field text-sm" value={newQuestion[`option${opt}`]} onChange={handleInputChange} />
                   </div>
                 ))}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-xs font-bold text-[#39424e] mb-1">Correct</label>
                     <select name="correctAnswer" className="input-field text-sm bg-white" value={newQuestion.correctAnswer} onChange={handleInputChange}>
-                      {['A', 'B', 'C', 'D'].map(opt => <option key={opt} value={opt}>Option {opt}</option>)}
+                      {['A', 'B', 'C', 'D'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-[#39424e] mb-1">Marks</label>
                     <input type="number" required min="1" name="marks" className="input-field text-sm" value={newQuestion.marks} onChange={handleInputChange} />
                   </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#39424e] mb-1 text-nowrap">Time (sec)</label>
+                    <input type="number" min="0" name="timeLimit" className="input-field text-sm" value={newQuestion.timeLimit} onChange={handleInputChange} placeholder="0 = None" title="0 means no limit" />
+                  </div>
                 </div>
-                <button type="submit" className="btn-primary mt-4 text-sm py-2">
-                  <Save className="w-4 h-4" /> Save Question
+                <button type="submit" className="btn-primary mt-4 text-sm py-2 w-full">
+                  <Save className="w-4 h-4" /> {editingId ? 'Update Question' : 'Save Question'}
                 </button>
               </form>
             </div>
@@ -120,9 +161,18 @@ export default function ManageQuestions() {
                   <div key={q.id} className="bg-white p-6 rounded border border-[var(--color-hr-border)] shadow-sm">
                     <div className="flex justify-between items-start mb-4">
                       <h4 className="font-bold text-[#39424e] text-lg">Q{idx + 1}. {q.questionText}</h4>
-                      <span className="bg-[#f3f7f7] text-[#39424e] text-xs font-bold px-2 py-1 rounded border border-[var(--color-hr-border)]">
-                        {q.marks} Marks
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {q.timeLimit > 0 && (
+                          <span className="flex items-center gap-1 bg-orange-100 text-orange-800 text-xs font-bold px-2 py-1 rounded border border-orange-200">
+                            <Clock className="w-3 h-3" /> {q.timeLimit}s
+                          </span>
+                        )}
+                        <span className="bg-[#f3f7f7] text-[#39424e] text-xs font-bold px-2 py-1 rounded border border-[var(--color-hr-border)]">
+                          {q.marks} Marks
+                        </span>
+                        <button onClick={() => handleEdit(q)} className="text-[#738f93] hover:text-[#39424e] ml-2"><Edit2 className="w-4 h-4" /></button>
+                        <button onClick={() => handleDelete(q.id)} className="text-red-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                      </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                       {['A', 'B', 'C', 'D'].map(opt => (

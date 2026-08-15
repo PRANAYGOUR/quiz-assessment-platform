@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Clock, AlertTriangle, CheckCircle, Lock } from 'lucide-react';
 
 export default function QuizTaking() {
   const { id } = useParams(); // attemptId
@@ -10,27 +10,23 @@ export default function QuizTaking() {
   const [attemptData, setAttemptData] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState({}); // { questionId: selectedOption }
-  const [timeLeft, setTimeLeft] = useState(null); // in seconds
+  const [answers, setAnswers] = useState({}); 
+  const [timeLeft, setTimeLeft] = useState(null); // global timer
+  const [questionTimeLeft, setQuestionTimeLeft] = useState(null); // local timer
+  const [lockedQuestions, setLockedQuestions] = useState({}); // { qId: true }
   const [submitting, setSubmitting] = useState(false);
 
   // Initialize Quiz Data
   useEffect(() => {
-    // In a real app, the backend should return the ongoing attempt data and time remaining.
-    // For this MVP, we pass the data in local state, or fetch it.
-    // But since `startQuiz` returns the questions, we should store them when starting.
-    // However, if the user refreshes, we lose it.
-    // Let's create a robust way: we need a GET /api/attempts/:id to fetch an in-progress attempt.
-    // For simplicity, let's assume we can fetch it, OR we just trust the user doesn't refresh.
-    // To make this MVP work beautifully without adding another backend route right now, we will use local storage as a cache.
-    
     const cachedData = localStorage.getItem(`attempt_${id}`);
     if (cachedData) {
       const data = JSON.parse(cachedData);
       setAttemptData(data.attempt);
-      setQuestions(data.questions);
       
-      // Calculate remaining time
+      // Feature: Randomize Questions!
+      const shuffled = [...data.questions].sort(() => Math.random() - 0.5);
+      setQuestions(shuffled);
+      
       const startTime = new Date(data.attempt.startedAt).getTime();
       const endTime = startTime + (data.quiz.duration * 60 * 1000);
       const remainingSecs = Math.floor((endTime - new Date().getTime()) / 1000);
@@ -46,10 +42,22 @@ export default function QuizTaking() {
     }
   }, [id, navigate]);
 
-  // Timer Countdown
+  // Set Local Timer on Question Change
+  useEffect(() => {
+    if (questions.length > 0) {
+      const currentQ = questions[currentIdx];
+      // If it has a limit, and it's not already locked
+      if (currentQ.timeLimit > 0 && !lockedQuestions[currentQ.id]) {
+        setQuestionTimeLeft(currentQ.timeLimit);
+      } else {
+        setQuestionTimeLeft(null);
+      }
+    }
+  }, [currentIdx, questions, lockedQuestions]);
+
+  // Global Timer Countdown
   useEffect(() => {
     if (timeLeft === null || timeLeft <= 0 || submitting) return;
-
     const timerId = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -60,21 +68,29 @@ export default function QuizTaking() {
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timerId);
   }, [timeLeft, submitting]);
 
-  const handleAutoSubmit = useCallback(async () => {
-    if(submitting) return;
-    alert("Time is up! Submitting your answers automatically.");
-    await submitAnswers();
-  }, [submitting]);
+  // Local Timer Countdown
+  useEffect(() => {
+    if (questionTimeLeft === null || questionTimeLeft <= 0 || submitting) return;
+    const timerId = setInterval(() => {
+      setQuestionTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timerId);
+          handleLocalTimeUp();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerId);
+  }, [questionTimeLeft, submitting]);
 
-  const submitAnswers = async () => {
+  const submitAnswers = async (overrideAnswers = null) => {
     setSubmitting(true);
-    
-    // Format answers array
-    const formattedAnswers = Object.entries(answers).map(([qId, ans]) => ({
+    const answersToSubmit = overrideAnswers || answers;
+    const formattedAnswers = Object.entries(answersToSubmit).map(([qId, ans]) => ({
       questionId: parseInt(qId),
       selectedAnswer: ans
     }));
@@ -82,7 +98,7 @@ export default function QuizTaking() {
     try {
       const res = await api.post(`/attempts/${id}/submit`, { answers: formattedAnswers });
       if (res.data.success) {
-        localStorage.removeItem(`attempt_${id}`); // clear cache
+        localStorage.removeItem(`attempt_${id}`);
         navigate(`/result/${id}`);
       }
     } catch (error) {
@@ -91,7 +107,31 @@ export default function QuizTaking() {
     }
   };
 
+  const handleAutoSubmit = useCallback(async () => {
+    if(submitting) return;
+    alert("Global time is up! Submitting your answers automatically.");
+    await submitAnswers();
+  }, [submitting, answers]); // Need answers in dependency if used directly, but submitAnswers uses state
+
+  const handleLocalTimeUp = useCallback(() => {
+    if(submitting) return;
+    const currentQ = questions[currentIdx];
+    alert(`Time is up for Question ${currentIdx + 1}! It is now locked.`);
+    
+    // Lock the question
+    setLockedQuestions(prev => ({ ...prev, [currentQ.id]: true }));
+    
+    // Auto advance
+    if (currentIdx < questions.length - 1) {
+      setCurrentIdx(prev => prev + 1);
+    } else {
+      // If it was the last question, auto-submit the whole quiz
+      submitAnswers();
+    }
+  }, [currentIdx, questions, submitting]);
+
   const handleOptionSelect = (qId, option) => {
+    if (lockedQuestions[qId]) return; // Cannot change if locked
     setAnswers(prev => ({ ...prev, [qId]: option }));
   };
 
@@ -104,15 +144,14 @@ export default function QuizTaking() {
   if (!questions.length) return <div className="p-10 text-center">Loading quiz environment...</div>;
 
   const currentQ = questions[currentIdx];
+  const isLocked = lockedQuestions[currentQ.id];
 
   return (
     <div className="min-h-screen bg-[#f3f7f7]">
-      {/* Header with Timer */}
       <header className="bg-[#39424e] text-white px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow">
         <h1 className="font-bold text-lg">{attemptData?.quizTitle || 'Technical Assessment'}</h1>
         <div className={`flex items-center gap-2 font-mono text-xl ${timeLeft < 60 ? 'text-red-400 animate-pulse' : 'text-[var(--color-primary-green)]'}`}>
-          <Clock className="w-5 h-5" />
-          {timeLeft !== null ? formatTime(timeLeft) : '--:--'}
+          Global: <Clock className="w-5 h-5 ml-2" /> {timeLeft !== null ? formatTime(timeLeft) : '--:--'}
         </div>
       </header>
 
@@ -120,29 +159,55 @@ export default function QuizTaking() {
         
         {/* Main Question Area */}
         <div className="flex-grow bg-white rounded border border-[var(--color-hr-border)] shadow-sm">
-          <div className="p-6 border-b border-[var(--color-hr-border)]">
-            <h2 className="text-sm font-bold text-[#738f93] mb-2 uppercase tracking-wide">
-              Question {currentIdx + 1} of {questions.length}
-            </h2>
-            <p className="text-lg font-semibold text-[#39424e]">{currentQ.questionText}</p>
+          <div className="p-6 border-b border-[var(--color-hr-border)] flex justify-between items-start">
+            <div>
+              <h2 className="text-sm font-bold text-[#738f93] mb-2 uppercase tracking-wide">
+                Question {currentIdx + 1} of {questions.length}
+              </h2>
+              <p className="text-lg font-semibold text-[#39424e] flex items-center gap-2">
+                {isLocked && <Lock className="w-5 h-5 text-red-500" />}
+                {currentQ.questionText}
+              </p>
+            </div>
+            
+            {/* Feature: Per-Question Local Timer */}
+            {questionTimeLeft !== null && !isLocked && (
+              <div className={`flex items-center gap-2 font-mono font-bold px-3 py-1 rounded border ${questionTimeLeft <= 10 ? 'bg-red-100 text-red-600 border-red-200 animate-pulse' : 'bg-orange-100 text-orange-600 border-orange-200'}`}>
+                <Clock className="w-4 h-4" /> {formatTime(questionTimeLeft)}
+              </div>
+            )}
+            {isLocked && (
+              <div className="flex items-center gap-2 font-mono font-bold px-3 py-1 rounded border bg-gray-100 text-gray-500 border-gray-200">
+                <Lock className="w-4 h-4" /> Locked
+              </div>
+            )}
           </div>
           
           <div className="p-6 space-y-4">
-            {['A', 'B', 'C', 'D'].map(opt => (
-              <label 
-                key={opt} 
-                className={`flex items-center p-4 rounded border cursor-pointer transition-colors ${answers[currentQ.id] === opt ? 'border-[var(--color-primary-green)] bg-[#f2faf4]' : 'border-[var(--color-hr-border)] hover:bg-[#f9fbfb]'}`}
-              >
-                <input 
-                  type="radio" 
-                  name={`question-${currentQ.id}`} 
-                  className="w-4 h-4 text-[var(--color-primary-green)] focus:ring-[var(--color-primary-green)]"
-                  checked={answers[currentQ.id] === opt}
-                  onChange={() => handleOptionSelect(currentQ.id, opt)}
-                />
-                <span className="ml-3 font-medium text-[#39424e]"><span className="font-bold mr-2">{opt}.</span> {currentQ[`option${opt}`]}</span>
-              </label>
-            ))}
+            {['A', 'B', 'C', 'D'].map(opt => {
+              const isSelected = answers[currentQ.id] === opt;
+              let labelClasses = `flex items-center p-4 rounded border transition-colors `;
+              
+              if (isLocked) {
+                labelClasses += isSelected ? 'border-gray-400 bg-gray-100 cursor-not-allowed opacity-75' : 'border-gray-200 cursor-not-allowed opacity-50';
+              } else {
+                labelClasses += isSelected ? 'border-[var(--color-primary-green)] bg-[#f2faf4] cursor-pointer' : 'border-[var(--color-hr-border)] hover:bg-[#f9fbfb] cursor-pointer';
+              }
+
+              return (
+                <label key={opt} className={labelClasses}>
+                  <input 
+                    type="radio" 
+                    name={`question-${currentQ.id}`} 
+                    className="w-4 h-4 text-[var(--color-primary-green)] focus:ring-[var(--color-primary-green)]"
+                    checked={isSelected}
+                    onChange={() => handleOptionSelect(currentQ.id, opt)}
+                    disabled={isLocked}
+                  />
+                  <span className="ml-3 font-medium text-[#39424e]"><span className="font-bold mr-2">{opt}.</span> {currentQ[`option${opt}`]}</span>
+                </label>
+              );
+            })}
           </div>
 
           <div className="p-4 bg-[#f9fbfb] border-t border-[var(--color-hr-border)] flex justify-between items-center">
@@ -173,14 +238,15 @@ export default function QuizTaking() {
           </div>
         </div>
 
-        {/* Sidebar Navigation Navigator */}
+        {/* Sidebar Navigation */}
         <div className="w-full md:w-64 flex-shrink-0">
           <div className="bg-white rounded border border-[var(--color-hr-border)] p-4 shadow-sm">
-            <h3 className="font-bold text-[#39424e] mb-4 text-center">Question Navigator</h3>
+            <h3 className="font-bold text-[#39424e] mb-4 text-center">Navigator</h3>
             <div className="grid grid-cols-4 gap-2">
               {questions.map((q, idx) => {
                 const isAnswered = !!answers[q.id];
                 const isCurrent = currentIdx === idx;
+                const isQLocked = lockedQuestions[q.id];
                 
                 let baseClasses = "w-10 h-10 rounded flex items-center justify-center text-sm font-bold border transition-colors cursor-pointer ";
                 
@@ -188,10 +254,12 @@ export default function QuizTaking() {
                   baseClasses += "border-[var(--color-primary-green)] ring-2 ring-[var(--color-primary-green)] ring-offset-1 ";
                 }
                 
-                if (isAnswered) {
-                  baseClasses += "bg-[var(--color-primary-green)] text-white border-[var(--color-primary-green)]";
+                if (isQLocked) {
+                  baseClasses += isAnswered ? "bg-gray-400 text-white border-gray-400 " : "bg-gray-100 text-gray-400 border-gray-200 ";
+                } else if (isAnswered) {
+                  baseClasses += "bg-[var(--color-primary-green)] text-white border-[var(--color-primary-green)] ";
                 } else {
-                  baseClasses += "bg-white text-[#39424e] border-[var(--color-hr-border)] hover:bg-[#f9fbfb]";
+                  baseClasses += "bg-white text-[#39424e] border-[var(--color-hr-border)] hover:bg-[#f9fbfb] ";
                 }
 
                 return (
@@ -199,16 +267,12 @@ export default function QuizTaking() {
                     key={q.id} 
                     onClick={() => setCurrentIdx(idx)}
                     className={baseClasses}
+                    title={isQLocked ? "Locked" : ""}
                   >
                     {idx + 1}
                   </button>
                 );
               })}
-            </div>
-            
-            <div className="mt-6 space-y-2 text-xs font-semibold text-[#738f93]">
-              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[var(--color-primary-green)] rounded-sm"></div> Answered</div>
-              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-white border border-[var(--color-hr-border)] rounded-sm"></div> Unanswered</div>
             </div>
           </div>
         </div>

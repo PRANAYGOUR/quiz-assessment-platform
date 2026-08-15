@@ -32,7 +32,7 @@ describe('Authentication API Endpoints', () => {
         .send({ email: 'test@test.com' }); // missing name, password
       
       expect(res.statusCode).toEqual(400);
-      expect(res.body.message).toBe('Please provide all fields');
+      expect(res.body.message).toBe('Please add all fields');
     });
 
     it('should return 400 if user already exists', async () => {

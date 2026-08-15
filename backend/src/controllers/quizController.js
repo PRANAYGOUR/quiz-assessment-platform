@@ -40,7 +40,7 @@ const getMyQuizzes = async (req, res, next) => {
 const addQuestion = async (req, res, next) => {
   try {
     const quizId = req.params.id;
-    const { questionText, optionA, optionB, optionC, optionD, correctAnswer, marks } = req.body;
+    const { questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit } = req.body;
 
     // Verify quiz belongs to this admin
     const quiz = await Quiz.findById(quizId);
@@ -53,7 +53,7 @@ const addQuestion = async (req, res, next) => {
       throw new Error('You can only add questions to your own quizzes');
     }
 
-    const questionId = await Question.create(quizId, questionText, optionA, optionB, optionC, optionD, correctAnswer, marks);
+    const questionId = await Question.create(quizId, questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit);
     
     res.status(201).json({ success: true, message: 'Question added successfully', questionId });
   } catch (error) {
@@ -135,6 +135,47 @@ const getAdminAnalytics = async (req, res, next) => {
   }
 };
 
+// @desc    Update a specific question
+// @route   PUT /api/quizzes/questions/:qId
+// @access  Private/Admin
+const updateQuestion = async (req, res, next) => {
+  try {
+    const { qId } = req.params;
+    const { questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit } = req.body;
+    
+    // Minimal validation - assume admin has rights for now based on route auth
+    const success = await Question.update(qId, questionText, optionA, optionB, optionC, optionD, correctAnswer, marks, timeLimit);
+    
+    if (success) {
+      res.status(200).json({ success: true, message: 'Question updated successfully' });
+    } else {
+      res.status(404);
+      throw new Error('Question not found');
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete a specific question
+// @route   DELETE /api/quizzes/questions/:qId
+// @access  Private/Admin
+const deleteQuestion = async (req, res, next) => {
+  try {
+    const { qId } = req.params;
+    const success = await Question.delete(qId);
+    
+    if (success) {
+      res.status(200).json({ success: true, message: 'Question deleted successfully' });
+    } else {
+      res.status(404);
+      throw new Error('Question not found');
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createQuiz,
   getMyQuizzes,
@@ -142,5 +183,7 @@ module.exports = {
   getQuizQuestions,
   getAvailableQuizzes,
   getQuizLeaderboard,
-  getAdminAnalytics
+  getAdminAnalytics,
+  updateQuestion,
+  deleteQuestion
 };

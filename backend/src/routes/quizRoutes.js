@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createQuiz, getMyQuizzes, addQuestion, getQuizQuestions, getAvailableQuizzes, getQuizLeaderboard, getAdminAnalytics } = require('../controllers/quizController');
+const { createQuiz, getMyQuizzes, addQuestion, getQuizQuestions, getAvailableQuizzes, getQuizLeaderboard, getAdminAnalytics, updateQuestion, deleteQuestion } = require('../controllers/quizController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 router.use(protect);
@@ -16,5 +16,7 @@ router.post('/', createQuiz);
 router.get('/my-quizzes', getMyQuizzes);
 router.post('/:id/questions', addQuestion);
 router.get('/:id/questions', getQuizQuestions);
+router.put('/questions/:qId', updateQuestion);
+router.delete('/questions/:qId', deleteQuestion);
 
 module.exports = router;
