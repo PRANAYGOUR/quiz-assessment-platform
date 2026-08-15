@@ -17,10 +17,11 @@ app.get('/api/health', (req, res) => {
 });
 
 const authRoutes = require('./routes/authRoutes');
+const quizRoutes = require('./routes/quizRoutes');
 
 // Feature Routes will be imported here by the team
 app.use('/api/auth', authRoutes);
-// app.use('/api/quizzes', quizRoutes);
+app.use('/api/quizzes', quizRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);
