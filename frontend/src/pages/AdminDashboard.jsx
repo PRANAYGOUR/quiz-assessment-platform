@@ -9,19 +9,24 @@ export default function AdminDashboard() {
   const { user, logout } = useContext(AuthContext);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState({ totalQuizzes: 0, totalAttempts: 0, averageScore: 0 });
 
   useEffect(() => {
-    const fetchQuizzes = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get('/quizzes/my-quizzes');
-        if (res.data.success) setQuizzes(res.data.quizzes);
+        const [quizRes, analyticsRes] = await Promise.all([
+          api.get('/quizzes/my-quizzes'),
+          api.get('/quizzes/admin/analytics')
+        ]);
+        if (quizRes.data.success) setQuizzes(quizRes.data.quizzes);
+        if (analyticsRes.data.success) setAnalytics(analyticsRes.data.analytics || { totalQuizzes: 0, totalAttempts: 0, averageScore: 0 });
       } catch (error) {
-        console.error('Failed to fetch quizzes', error);
+        console.error('Failed to fetch data', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchQuizzes();
+    fetchData();
   }, []);
 
   return (
@@ -46,8 +51,25 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        {/* Analytics Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="bg-white p-6 rounded border border-[var(--color-hr-border)] shadow-sm border-t-4 border-t-[#39424e]">
+            <h3 className="text-sm font-bold text-[#738f93] uppercase tracking-wider mb-2">Active Assessments</h3>
+            <p className="text-3xl font-extrabold text-[#39424e]">{analytics.totalQuizzes}</p>
+          </div>
+          <div className="bg-white p-6 rounded border border-[var(--color-hr-border)] shadow-sm border-t-4 border-t-[var(--color-primary-green)]">
+            <h3 className="text-sm font-bold text-[#738f93] uppercase tracking-wider mb-2">Total Submissions</h3>
+            <p className="text-3xl font-extrabold text-[#39424e]">{analytics.totalAttempts}</p>
+          </div>
+          <div className="bg-white p-6 rounded border border-[var(--color-hr-border)] shadow-sm border-t-4 border-t-blue-500">
+            <h3 className="text-sm font-bold text-[#738f93] uppercase tracking-wider mb-2">Avg. Global Score</h3>
+            <p className="text-3xl font-extrabold text-[#39424e]">{Number(analytics.averageScore || 0).toFixed(1)}</p>
+          </div>
+        </div>
+
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-[#39424e]">Your Assessments</h1>
+          <h2 className="text-2xl font-bold text-[#39424e]">Assessment Manager</h2>
           <Link to="/admin/create-quiz" className="btn-primary w-auto px-6 py-2">
             <PlusCircle className="w-4 h-4" /> Create New Assessment
           </Link>

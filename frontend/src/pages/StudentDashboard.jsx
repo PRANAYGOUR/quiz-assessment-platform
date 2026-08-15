@@ -100,10 +100,13 @@ export default function StudentDashboard() {
                     )}
                   </div>
                 </div>
-                <div className="p-4 border-t border-[var(--color-hr-border)] bg-[#f9fbfb]">
-                  <button onClick={() => handleStart(quiz.id)} className="btn-primary py-2 text-sm w-full">
-                    <PlayCircle className="w-4 h-4" /> Start Attempt
+                <div className="p-4 border-t border-[var(--color-hr-border)] bg-[#f9fbfb] flex gap-2">
+                  <button onClick={() => handleStart(quiz.id)} className="btn-primary py-2 text-sm flex-1">
+                    <PlayCircle className="w-4 h-4" /> Start
                   </button>
+                  <Link to={`/leaderboard/${quiz.id}`} className="px-4 py-2 bg-white border border-[var(--color-hr-border)] text-[#39424e] font-semibold text-sm rounded hover:bg-[#f3f7f7] transition-colors flex items-center justify-center gap-1">
+                    Leaderboard
+                  </Link>
                 </div>
               </div>
             ))}

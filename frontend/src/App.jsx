@@ -9,6 +9,7 @@ import ManageQuestions from './pages/ManageQuestions';
 import StudentDashboard from './pages/StudentDashboard';
 import QuizTaking from './pages/QuizTaking';
 import QuizResult from './pages/QuizResult';
+import Leaderboard from './pages/Leaderboard';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -52,6 +53,12 @@ function App() {
           <Route path="/result/:id" element={
             <ProtectedRoute allowedRoles={['student', 'admin']}>
               <QuizResult />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/leaderboard/:id" element={
+            <ProtectedRoute allowedRoles={['student', 'admin']}>
+              <Leaderboard />
             </ProtectedRoute>
           } />
           
