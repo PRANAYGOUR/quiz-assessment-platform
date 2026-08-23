@@ -1,10 +1,10 @@
 const pool = require('../config/db');
 
 class Quiz {
-  static async create(title, description, duration, negativeMarking, createdBy) {
+  static async create(title, description, duration, negativeMarking, adminId) {
     const [result] = await pool.query(
-      'INSERT INTO quizzes (title, description, duration, negativeMarking, createdBy) VALUES (?, ?, ?, ?, ?)',
-      [title, description, duration, negativeMarking, createdBy]
+      'INSERT INTO quizzes (title, description, duration, negativeMarking, createdBy) VALUES (?, ?, ?, ?, ?) RETURNING id',
+      [title, description, duration || 30, negativeMarking || false, adminId]
     );
     return result.insertId;
   }

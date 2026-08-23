@@ -3,7 +3,7 @@ const pool = require('../config/db');
 class Attempt {
   static async create(userId, quizId) {
     const [result] = await pool.query(
-      'INSERT INTO attempts (userId, quizId, status) VALUES (?, ?, ?)',
+      'INSERT INTO attempts (userId, quizId, status) VALUES (?, ?, ?) RETURNING id',
       [userId, quizId, 'IN_PROGRESS']
     );
     return result.insertId;
@@ -23,7 +23,7 @@ class Attempt {
 
   static async saveAnswer(attemptId, questionId, selectedAnswer, isCorrect, marksAwarded) {
     await pool.query(
-      'INSERT INTO answers (attemptId, questionId, selectedAnswer, isCorrect, marksAwarded) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO answers (attemptId, questionId, selectedAnswer, isCorrect, marksAwarded) VALUES (?, ?, ?, ?, ?) RETURNING id',
       [attemptId, questionId, selectedAnswer, isCorrect, marksAwarded]
     );
   }

@@ -188,7 +188,7 @@ const getQuestionAnalytics = async (req, res, next) => {
       SELECT 
         q.id as questionId, q.questionText, q.difficulty, q.category,
         COUNT(a.id) as totalAttempts,
-        SUM(CASE WHEN a.isCorrect = 1 THEN 1 ELSE 0 END) as correctAnswers
+        SUM(CASE WHEN a.isCorrect = true THEN 1 ELSE 0 END) as correctAnswers
       FROM questions q
       LEFT JOIN answers a ON q.id = a.questionId
       WHERE q.quizId = ?
