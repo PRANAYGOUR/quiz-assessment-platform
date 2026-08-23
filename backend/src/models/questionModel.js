@@ -21,7 +21,7 @@ class Question {
     );
     return result.affectedRows > 0;
   }
-}
+
   static async delete(id) {
     const [result] = await pool.query('DELETE FROM questions WHERE id = ?', [id]);
     return result.affectedRows > 0;
