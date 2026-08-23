@@ -47,6 +47,7 @@ export default function StudentDashboard() {
       try {
         const res = await api.post(`/attempts/start/${quizId}`);
         if(res.data.success) {
+          localStorage.setItem(`attempt_${res.data.attemptId}`, JSON.stringify(res.data));
           navigate(`/quiz/${res.data.attemptId}`);
         }
       } catch (error) {
