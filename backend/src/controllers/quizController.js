@@ -80,7 +80,7 @@ const getQuizQuestions = async (req, res, next) => {
 const getAvailableQuizzes = async (req, res, next) => {
   try {
     const pool = require('../config/db');
-    const [rows] = await pool.query('SELECT id, title, description, duration, negativeMarking, createdAt FROM quizzes ORDER BY createdAt DESC');
+    const [rows] = await pool.query('SELECT id, title, description, duration, negativemarking as "negativeMarking", createdat as "createdAt" FROM quizzes ORDER BY createdat DESC');
     res.status(200).json({ success: true, quizzes: rows });
   } catch (error) {
     next(error);

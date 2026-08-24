@@ -10,12 +10,12 @@ class Quiz {
   }
 
   static async findByAdmin(adminId) {
-    const [rows] = await pool.query('SELECT * FROM quizzes WHERE createdBy = ? ORDER BY createdAt DESC', [adminId]);
+    const [rows] = await pool.query('SELECT id, title, description, duration, negativemarking as "negativeMarking", createdby as "createdBy", createdat as "createdAt" FROM quizzes WHERE createdby = ? ORDER BY createdat DESC', [adminId]);
     return rows;
   }
 
   static async findById(id) {
-    const [rows] = await pool.query('SELECT * FROM quizzes WHERE id = ?', [id]);
+    const [rows] = await pool.query('SELECT id, title, description, duration, negativemarking as "negativeMarking", createdby as "createdBy", createdat as "createdAt" FROM quizzes WHERE id = ?', [id]);
     return rows[0];
   }
 }
