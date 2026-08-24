@@ -102,21 +102,6 @@ export default function Register() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-[#39424e] mb-1">
-                I am a...
-              </label>
-              <select
-                name="role"
-                className="input-field bg-white"
-                value={formData.role}
-                onChange={handleChange}
-              >
-                <option value="student">Student (Take quizzes)</option>
-                <option value="admin">Admin (Create quizzes)</option>
-              </select>
-            </div>
-
             <div className="pt-2">
               <button
                 type="submit"
