@@ -21,6 +21,7 @@ const startQuiz = async (req, res, next) => {
     // We will allow multiple attempts for now to make testing easier
 
     const attemptId = await Attempt.create(userId, quizId);
+    const attempt = await Attempt.findById(attemptId);
     const questions = await Question.findByQuizId(quizId);
 
     // Remove correct answers before sending to frontend!
@@ -32,6 +33,7 @@ const startQuiz = async (req, res, next) => {
     res.status(201).json({
       success: true,
       attemptId,
+      attempt,
       quiz,
       questions: sanitizedQuestions
     });
