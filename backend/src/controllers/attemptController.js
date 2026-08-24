@@ -17,8 +17,9 @@ const startQuiz = async (req, res, next) => {
       throw new Error('Quiz not found');
     }
 
-    // Optional MVP rule: prevent multiple attempts
-    // We will allow multiple attempts for now to make testing easier
+    // Rule: Re-attempting overwrites the previous result
+    const pool = require('../config/db');
+    await pool.query('DELETE FROM attempts WHERE userid = ? AND quizid = ?', [userId, quizId]);
 
     const attemptId = await Attempt.create(userId, quizId);
     const attempt = await Attempt.findById(attemptId);

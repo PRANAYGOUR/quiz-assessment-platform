@@ -124,9 +124,6 @@ export default function QuizTaking() {
     // Auto advance
     if (currentIdx < questions.length - 1) {
       setCurrentIdx(prev => prev + 1);
-    } else {
-      // If it was the last question, auto-submit the whole quiz
-      submitAnswers();
     }
   }, [currentIdx, questions, submitting]);
 

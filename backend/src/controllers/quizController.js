@@ -96,11 +96,11 @@ const getQuizLeaderboard = async (req, res, next) => {
     const pool = require('../config/db');
     
     const [rows] = await pool.query(`
-      SELECT a.id, a.score, a.totalMarks, a.submittedAt, u.name 
+      SELECT a.id, a.score, a.totalmarks as "totalMarks", a.submittedat as "submittedAt", u.name 
       FROM attempts a
-      JOIN users u ON a.userId = u.id
-      WHERE a.quizId = ? AND a.status = 'SUBMITTED'
-      ORDER BY a.score DESC, a.submittedAt ASC
+      JOIN users u ON a.userid = u.id
+      WHERE a.quizid = ? AND a.status = 'SUBMITTED'
+      ORDER BY a.score DESC, a.submittedat ASC
       LIMIT 50
     `, [quizId]);
 
@@ -121,12 +121,12 @@ const getAdminAnalytics = async (req, res, next) => {
     // Get basic stats for quizzes created by this admin
     const [stats] = await pool.query(`
       SELECT 
-        COUNT(DISTINCT q.id) as totalQuizzes,
-        COUNT(a.id) as totalAttempts,
-        AVG(CASE WHEN a.status = 'SUBMITTED' THEN a.score END) as averageScore
+        COUNT(DISTINCT q.id) as "totalQuizzes",
+        COUNT(a.id) as "totalAttempts",
+        AVG(CASE WHEN a.status = 'SUBMITTED' THEN a.score END) as "averageScore"
       FROM quizzes q
-      LEFT JOIN attempts a ON q.id = a.quizId
-      WHERE q.createdBy = ?
+      LEFT JOIN attempts a ON q.id = a.quizid
+      WHERE q.createdby = ?
     `, [adminId]);
 
     res.status(200).json({ success: true, analytics: stats[0] });
@@ -186,12 +186,12 @@ const getQuestionAnalytics = async (req, res, next) => {
     
     const [stats] = await pool.query(`
       SELECT 
-        q.id as questionId, q.questionText, q.difficulty, q.category,
-        COUNT(a.id) as totalAttempts,
-        SUM(CASE WHEN a.isCorrect = true THEN 1 ELSE 0 END) as correctAnswers
+        q.id as "questionId", q.questiontext as "questionText", q.difficulty, q.category,
+        COUNT(a.id) as "totalAttempts",
+        SUM(CASE WHEN a.iscorrect = true THEN 1 ELSE 0 END) as "correctAnswers"
       FROM questions q
-      LEFT JOIN answers a ON q.id = a.questionId
-      WHERE q.quizId = ?
+      LEFT JOIN answers a ON q.id = a.questionid
+      WHERE q.quizid = ?
       GROUP BY q.id
     `, [quizId]);
     
