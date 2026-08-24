@@ -122,7 +122,7 @@ const getAdminAnalytics = async (req, res, next) => {
     const [stats] = await pool.query(`
       SELECT 
         COUNT(DISTINCT q.id) as "totalQuizzes",
-        COUNT(a.id) as "totalAttempts",
+        COUNT(CASE WHEN a.status = 'SUBMITTED' THEN 1 END) as "totalAttempts",
         AVG(CASE WHEN a.status = 'SUBMITTED' THEN a.score END) as "averageScore"
       FROM quizzes q
       LEFT JOIN attempts a ON q.id = a.quizid
