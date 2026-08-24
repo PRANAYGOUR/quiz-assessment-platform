@@ -1,10 +1,76 @@
-# Quiz & Assessment Platform
+<div align="center">
+  <h1>🎯 Quiz & Assessment Platform</h1>
+  <p>A full-stack, "HackerRank-style" technical assessment platform designed for club coordinators to conduct timed quizzes and automatically evaluate student submissions.</p>
 
-A full-stack, "HackerRank-style" technical assessment platform designed for club coordinators to conduct timed quizzes and automatically evaluate student submissions. Built with React, Node.js, Express, and PostgreSQL (Supabase).
+  ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+  ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+  ![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
+  ![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)
+  ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+  ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+  ![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
+  ![Render](https://img.shields.io/badge/Render-%2346E3B7.svg?style=for-the-badge&logo=render&logoColor=white)
+</div>
 
-## 🚀 Live Demo
-- **Frontend (Vercel):** [https://quiz-assessment-platform-three.vercel.app](https://quiz-assessment-platform-three.vercel.app)
-- **Backend API (Render):** [https://quiz-assessment-platform-6obd.onrender.com/api/health](https://quiz-assessment-platform-6obd.onrender.com/api/health)
+---
+
+## 🚀 Live Demo & Deployment
+
+The application is fully containerized and deployed across specialized cloud platforms for maximum efficiency:
+
+- 🖥️ **Frontend (Deployed on Vercel):** [https://quiz-assessment-platform-three.vercel.app](https://quiz-assessment-platform-three.vercel.app)
+- ⚙️ **Backend API (Deployed on Render):** [https://quiz-assessment-platform-6obd.onrender.com/api/health](https://quiz-assessment-platform-6obd.onrender.com/api/health)
+- 🗄️ **Database (Hosted on Supabase):** PostgreSQL Transaction Pooler
+
+---
+
+## 🏗️ Architecture Diagram
+
+```mermaid
+graph TD
+    User([👨‍🎓 Student / 👨‍🏫 Admin]) -->|HTTP Requests| Frontend
+    subgraph "Frontend Layer"
+        Frontend[React.js App + Tailwind UI<br/>🚀 Deployed on Vercel]
+    end
+    Frontend <-->|REST API + JWT| Backend
+    subgraph "Backend Layer"
+        Backend[Node.js + Express Server<br/>🚀 Deployed on Render]
+    end
+    Backend <-->|pg connection| Database
+    subgraph "Database Layer"
+        Database[(PostgreSQL<br/>🚀 Hosted on Supabase)]
+    end
+```
+
+---
+
+## 📂 Project Structure
+
+```text
+quiz-assessment-platform/
+├── frontend/                  # React Frontend (Vite)
+│   ├── src/
+│   │   ├── components/        # Reusable UI elements (Navbar, Buttons)
+│   │   ├── context/           # React Context (AuthContext)
+│   │   ├── pages/             # Route views (AdminDashboard, QuizTaking, etc.)
+│   │   ├── App.jsx            # Main app router
+│   │   └── main.jsx           # React entry point
+│   ├── package.json
+│   └── tailwind.config.js     # Styling configuration
+│
+├── backend/                   # Node.js/Express API
+│   ├── src/
+│   │   ├── config/            # DB connection (pg Pool) and Environment setup
+│   │   ├── controllers/       # Route logic (authController, quizController)
+│   │   ├── middleware/        # JWT Verification & Error Handling
+│   │   ├── models/            # SQL query abstractions
+│   │   ├── routes/            # Express route definitions
+│   │   └── server.js          # API entry point
+│   ├── tests/                 # Jest & Supertest API tests
+│   └── package.json
+│
+└── README.md                  # Project Documentation
+```
 
 ---
 
@@ -29,18 +95,11 @@ A full-stack, "HackerRank-style" technical assessment platform designed for club
 
 ---
 
-## 🛠️ Technology Stack
-- **Frontend:** React (Vite), Tailwind CSS, React Router, Lucide Icons
-- **Backend:** Node.js, Express.js, JSON Web Tokens (JWT), Bcrypt
-- **Database:** PostgreSQL (Supabase) via `pg` driver
-
----
-
-## 📂 Project Architecture & Branching Strategy
+## 📂 Branching Strategy
 This project utilized a strict Git branching strategy:
 - `main`: Stable, production-ready code.
 - `develop`: Integration branch for new features.
-- `feature/optional-features`: Dedicated branch for developing certificates, analytics, and metadata.
+- `feature/*`: Dedicated branches for developing specific tasks like analytics and deployment configurations.
 
 ---
 
@@ -71,33 +130,33 @@ This project utilized a strict Git branching strategy:
 
 ## 🧪 Testing
 Basic unit and integration tests are configured using **Jest** and **Supertest**.
-To run the API health tests:
-\`\`\`bash
+To run the API health tests locally:
+```bash
 cd backend
 npm test
-\`\`\`
+```
 
 ---
 
 ## 💻 Local Setup Instructions
 
 1. **Clone the repository**
-   \`\`\`bash
+   ```bash
    git clone https://github.com/PRANAYGOUR/quiz-assessment-platform.git
-   \`\`\`
+   ```
 
 2. **Backend Setup**
-   \`\`\`bash
+   ```bash
    cd backend
    npm install
    # Create a .env file with DATABASE_URL and JWT_SECRET
    npm start
-   \`\`\`
+   ```
 
 3. **Frontend Setup**
-   \`\`\`bash
+   ```bash
    cd frontend
    npm install
    # Create a .env file with VITE_API_URL=http://localhost:10000/api
    npm run dev
-   \`\`\`
+   ```
