@@ -10,7 +10,10 @@ class Attempt {
   }
 
   static async findById(id) {
-    const [rows] = await pool.query('SELECT * FROM attempts WHERE id = ?', [id]);
+    const [rows] = await pool.query(
+      'SELECT id, userid as "userId", quizid as "quizId", score, totalmarks as "totalMarks", status, startedat as "startedAt", submittedat as "submittedAt" FROM attempts WHERE id = ?',
+      [id]
+    );
     return rows[0];
   }
 

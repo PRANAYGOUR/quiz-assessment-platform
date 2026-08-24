@@ -10,7 +10,10 @@ class Question {
   }
 
   static async findByQuizId(quizId) {
-    const [rows] = await pool.query('SELECT * FROM questions WHERE quizId = ?', [quizId]);
+    const [rows] = await pool.query(
+      'SELECT id, quizid as "quizId", questiontext as "questionText", optiona as "optionA", optionb as "optionB", optionc as "optionC", optiond as "optionD", correctanswer as "correctAnswer", marks, timelimit as "timeLimit", category, difficulty FROM questions WHERE quizid = ?',
+      [quizId]
+    );
     return rows;
   }
 
