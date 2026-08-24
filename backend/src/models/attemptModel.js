@@ -33,19 +33,19 @@ class Attempt {
 
   static async getAttemptResult(attemptId) {
     const [attemptRows] = await pool.query(`
-      SELECT a.*, q.title as quizTitle 
+      SELECT a.id, a.userid as "userId", a.quizid as "quizId", a.score, a.totalmarks as "totalMarks", a.status, a.startedat as "startedAt", a.submittedat as "submittedAt", q.title as "quizTitle" 
       FROM attempts a 
-      JOIN quizzes q ON a.quizId = q.id 
+      JOIN quizzes q ON a.quizid = q.id 
       WHERE a.id = ?
     `, [attemptId]);
     
     if (attemptRows.length === 0) return null;
 
     const [answerRows] = await pool.query(`
-      SELECT ans.*, q.questionText, q.correctAnswer as actualCorrectAnswer 
+      SELECT ans.id, ans.attemptid as "attemptId", ans.questionid as "questionId", ans.selectedanswer as "selectedAnswer", ans.iscorrect as "isCorrect", ans.marksawarded as "marksAwarded", q.questiontext as "questionText", q.correctanswer as "actualCorrectAnswer" 
       FROM answers ans 
-      JOIN questions q ON ans.questionId = q.id 
-      WHERE ans.attemptId = ?
+      JOIN questions q ON ans.questionid = q.id 
+      WHERE ans.attemptid = ?
     `, [attemptId]);
 
     return {
