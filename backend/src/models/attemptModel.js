@@ -6,7 +6,7 @@ class Attempt {
       'INSERT INTO attempts (userId, quizId, status) VALUES (?, ?, ?) RETURNING id',
       [userId, quizId, 'IN_PROGRESS']
     );
-    return result[0].id;
+    return result.insertId;
   }
 
   static async findById(id) {
