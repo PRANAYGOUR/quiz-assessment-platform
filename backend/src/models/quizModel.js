@@ -10,7 +10,16 @@ class Quiz {
   }
 
   static async findByAdmin(adminId) {
-    const [rows] = await pool.query('SELECT id, title, description, duration, negativemarking as "negativeMarking", createdby as "createdBy", createdat as "createdAt" FROM quizzes WHERE createdby = ? ORDER BY createdat DESC', [adminId]);
+    const [rows] = await pool.query(`
+      SELECT q.id, q.title, q.description, q.duration, q.negativemarking as "negativeMarking", q.createdby as "createdBy", q.createdat as "createdAt",
+             COUNT(a.id) as "attemptCount",
+             ROUND(AVG(a.score), 1) as "avgScore"
+      FROM quizzes q
+      LEFT JOIN attempts a ON q.id = a.quizid AND a.status = 'SUBMITTED'
+      WHERE q.createdby = ?
+      GROUP BY q.id
+      ORDER BY q.createdat DESC
+    `, [adminId]);
     return rows;
   }
 

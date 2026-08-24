@@ -89,6 +89,8 @@ export default function AdminDashboard() {
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#738f93] uppercase tracking-wider">Title</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#738f93] uppercase tracking-wider">Duration</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#738f93] uppercase tracking-wider">Submissions</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-[#738f93] uppercase tracking-wider">Avg Score</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-[#738f93] uppercase tracking-wider">Created</th>
                   <th className="px-6 py-4 text-right text-xs font-semibold text-[#738f93] uppercase tracking-wider">Actions</th>
                 </tr>
@@ -101,6 +103,12 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#39424e]">
                       {quiz.duration} mins
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#39424e]">
+                      <span className="bg-[#f3f7f7] px-2 py-1 rounded font-bold">{quiz.attemptCount || 0}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#39424e]">
+                      {quiz.avgScore ? `${quiz.avgScore} pts` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#738f93]">
                       {new Date(quiz.createdAt || quiz.createdat).toLocaleDateString()}
