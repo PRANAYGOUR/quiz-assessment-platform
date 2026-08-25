@@ -41,6 +41,9 @@ export default function Login() {
           <p className="mt-2 text-sm text-[#738f93]">
             Prepare for your technical assessment
           </p>
+          <div className="mt-4 inline-block bg-blue-50 text-blue-800 px-3 py-1 rounded-full text-xs font-medium border border-blue-200">
+            ℹ️ Students and Admins can both log in here
+          </div>
         </div>
         
         <div className="bg-white py-8 px-10 shadow-sm border border-[var(--color-hr-border)] rounded-md">
