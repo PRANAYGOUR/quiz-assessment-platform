@@ -14,6 +14,14 @@ export const AuthProvider = ({ children }) => {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
+
+    // Anti-Sleep Mechanism: Wake up the free-tier backend silently
+    api.get('/health').catch(() => {});
+    const interval = setInterval(() => {
+      api.get('/health').catch(() => {});
+    }, 5 * 60 * 1000); // Ping every 5 minutes while the app is open
+
+    return () => clearInterval(interval);
   }, []);
 
   const login = async (email, password) => {
